@@ -3,8 +3,8 @@ import platform
 import configparser
 
 HOME_DIR = os.environ["USERPROFILE"] if platform.system() == "Windows" else os.environ["HOME"]
-INPUT_DIR = os.path.join(HOME_DIR, "PycharmProjects", "dhs622", "week3", "input")
-OUTPUT_DIR = os.path.join(HOME_DIR, "PycharmProjects", "dhs622", "week3", "output")
+INPUT_DIR = os.path.join(HOME_DIR, "PycharmProjects", "dhs622", "week5", "input")
+OUTPUT_DIR = os.path.join(HOME_DIR, "PycharmProjects", "dhs622", "week5", "output")
 try:
     assert os.path.exists(OUTPUT_DIR)
 except:
