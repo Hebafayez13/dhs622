@@ -14,8 +14,8 @@ from .db import (
     fetch_time_series_chart_data,
     fetch_top_messages,
     insert_data_into_seed_table,
-    insert_data_into_channel_metadata_table_advanced,
-    insert_data_into_channel_messages_table_advanced,
+    insert_data_into_channel_metadata_table,
+    insert_data_into_channel_messages_table,
 )
 
 SECONDS_TO_PAUSE_BETWEEN_CHANNEL_INFO_LOOKUPS = 30
@@ -98,7 +98,7 @@ def retrieve_and_save_channel_metadata(
 
     # Insert data into database
     if len(records) > 0:
-        insert_data_into_channel_metadata_table_advanced(records)
+        insert_data_into_channel_metadata_table(records)
         insert_data_into_seed_table(seed_records)
 
 
@@ -197,42 +197,34 @@ def render_message_table(
     return records
 
 
-def translate_messages(records: list[dict]) -> list[dict]:
-    df = pd.DataFrame.from_records(records)
-
-    df["message_translated"] = df["message_text"].apply(
-        lambda my_text: GoogleTranslator(source="auto", target="en").translate(my_text)
-        if my_text is not None
-        else None
-    )
-
-    df = df[
-        [
-            "url",
-            "message_datetime",
-            "message_views",
-            "message_forwards",
-            "message_translated",
-            "message_text",
-            "channel_name",
-            "channel_id",
-            "message_id",
-        ]
-    ]
-
-    return df.to_dict("records")
-
-
-def send_handles_to_tg_channel_metadata_lookup_queue(data_json: dict):
-    send_data_to_queue([data_json], handles_queue)
-
-
-def send_handles_to_tg_channel_messages_lookup_queue(records: list[dict]):
-    send_data_to_queue(records, messages_queue)
+# def translate_messages(records: list[dict]) -> list[dict]:
+#     df = pd.DataFrame.from_records(records)
+#
+#     df["message_translated"] = df["message_text"].apply(
+#         lambda my_text: GoogleTranslator(source="auto", target="en").translate(my_text)
+#         if my_text is not None
+#         else None
+#     )
+#
+#     df = df[
+#         [
+#             "url",
+#             "message_datetime",
+#             "message_views",
+#             "message_forwards",
+#             "message_translated",
+#             "message_text",
+#             "channel_name",
+#             "channel_id",
+#             "message_id",
+#         ]
+#     ]
+#
+#     return df.to_dict("records")
 
 
 def store_channel_messages(records: list[dict]):
-    insert_data_into_channel_messages_table_advanced(records)
+    insert_data_into_channel_messages_table(records)
 
 
 def extract_data_from_message_object(message: TelegramMessage) -> dict:

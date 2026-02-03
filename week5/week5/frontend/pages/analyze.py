@@ -14,7 +14,7 @@ from ...utilities.logic import (
     get_birth_chart_data,
     get_time_series_chart_data,
     render_message_table,
-    translate_messages,
+    # translate_messages,
 )
 
 layout = html.Div(
@@ -270,12 +270,12 @@ def render_message_table_callback(
 
     return html.Div(
         [
-            html.Button(
-                "Translate messages to English",
-                id="translate-button",
-                n_clicks=0,
-                disabled=False,
-            ),
+            # html.Button(
+            #     "Translate messages to English",
+            #     id="translate-button",
+            #     n_clicks=0,
+            #     disabled=False,
+            # ),
             dash_table.DataTable(
                 id="message-table",
                 data=records,
@@ -299,24 +299,24 @@ def render_message_table_callback(
     )
 
 
-@dash.callback(
-    Output("message-table", "data"),
-    Output("message-table", "columns"),
-    Input("translate-button", "n_clicks"),
-    State("message-table", "data"),
-)
-def translate_messages_callback(
-    num_clicks: int, records: list[dict]
-) -> (list[dict], list[dict]):
-    if num_clicks == 0:
-        return no_update, no_update
-
-    # Translate messages
-    records = translate_messages(records)
-
-    return records, [
-        {"name": key, "id": key, "type": "text", "presentation": "markdown"}
-        if key == "url"
-        else {"id": key, "name": key}
-        for key in records[0].keys()
-    ]
+# @dash.callback(
+#     Output("message-table", "data"),
+#     Output("message-table", "columns"),
+#     Input("translate-button", "n_clicks"),
+#     State("message-table", "data"),
+# )
+# def translate_messages_callback(
+#     num_clicks: int, records: list[dict]
+# ) -> (list[dict], list[dict]):
+#     if num_clicks == 0:
+#         return no_update, no_update
+#
+#     # Translate messages
+#     records = translate_messages(records)
+#
+#     return records, [
+#         {"name": key, "id": key, "type": "text", "presentation": "markdown"}
+#         if key == "url"
+#         else {"id": key, "name": key}
+#         for key in records[0].keys()
+#     ]

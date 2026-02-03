@@ -34,14 +34,8 @@ def instantiate_seed_table(my_table_name: str) -> SQLAlchemyTable:
     return my_table
 
 
+
 def insert_data_into_channel_metadata_table(records: list[dict]):
-    stmt = sa.insert(channel_metadata_table).values(records)
-    with engine.connect() as conn:
-        conn.execute(stmt)
-        conn.commit()
-
-
-def insert_data_into_channel_metadata_table_advanced(records: list[dict]):
     # check if the table already contains channels matching the IDs of the incoming records
     stmt = sa.select(channel_metadata_table.c.channel_id).where(
         channel_metadata_table.c.channel_id.in_(
@@ -71,14 +65,32 @@ def insert_data_into_channel_metadata_table_advanced(records: list[dict]):
 
 
 def insert_data_into_seed_table(records: list[dict]):
-    stmt = sa.insert(seed_table).values(records)
+    # check if the table already contains channels matching the IDs of the incoming records
+    stmt = sa.select(seed_table.c.channel_id).where(
+        seed_table.c.channel_id.in_(
+            [record["channel_id"] for record in records]
+        )
+    )
     with engine.connect() as conn:
-        conn.execute(stmt)
-        conn.commit()
+        rp = conn.execute(stmt)
+        rows = rp.fetchall()
+    if len(rows) > 0:
+        rows = [x for (x,) in rows]
 
+    new_records = [record for record in records if record["channel_id"] not in rows]
+    duplicate_records = [record for record in records if record["channel_id"] in rows]
 
-# TODO: consider creating an insert_data_into_seed_table_advanced() function
-
+    if len(new_records) > 0:
+        # save new_records
+        try:
+            stmt = sa.insert(seed_table).values(new_records)
+            with engine.connect() as conn:
+                conn.execute(stmt)
+                conn.commit()
+        except Exception as e:
+            print(e)
+    if len(duplicate_records) > 0:
+        pass  # do nothing with these
 
 def instantiate_channel_messages_table(my_table_name: str) -> SQLAlchemyTable:
     my_table = sa.Table(
@@ -103,13 +115,6 @@ def instantiate_channel_messages_table(my_table_name: str) -> SQLAlchemyTable:
 
 
 def insert_data_into_channel_messages_table(records: list[dict]):
-    stmt = sa.insert(channel_message_table).values(records)
-    with engine.connect() as conn:
-        conn.execute(stmt)
-        conn.commit()
-
-
-def insert_data_into_channel_messages_table_advanced(records: list[dict]):
     """
     This function receives a list of records to insert into the channel messages SQL table.
     That table, however, imposes a primary key restriction on unique tuples (channel_id, message_id).
